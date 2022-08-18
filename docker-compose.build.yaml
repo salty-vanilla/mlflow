@@ -1,0 +1,9 @@
+services:
+  mlflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - PYTHON_TAG=3.9.13-slim-buster
+        - MLFLOW_VERSION=1.28.0
+    image: saltyvanilla/mlflow:python3.9-mlflow1.28.0

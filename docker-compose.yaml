@@ -1,0 +1,35 @@
+services:
+  db:
+    image: mysql:8.0-debian
+    restart: always
+    environment:
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      TZ: "Asia/Tokyo"
+    volumes:
+      - $PWD/db:/var/lib/mysql
+    command: --default_authentication_plugin=mysql_native_password
+  ftp:
+    image: stilliard/pure-ftpd:buster-latest
+    restart: always
+    volumes:
+      - $PWD/ftp/data:/home/ftpusers
+    environment:
+      - PUBLICHOST=localhost
+      - FTP_USER_NAME=${FTP_USER}
+      - FTP_USER_PASS=${FTP_PASSWORD}
+      - FTP_USER_HOME=/home/ftpusers
+  mlflow:
+    image: saltyvanilla/mlflow:python3.9-mlflow1.28.0
+    restart: always
+    environment:
+      BACKEND_STORE_URI: mysql://${DB_USER}:${DB_PASSWORD}@db:3306/${DB_NAME}
+      DEFAULT_ARTIFACT_ROOT: ftp://${FTP_USER}:${FTP_PASSWORD}@ftp/artifact_location
+      TZ: "Asia/Tokyo"
+    ports:
+      - "${MLFLOW_PORT}:5000"
+    depends_on:
+      - db
+      - ftp
